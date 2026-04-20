@@ -10,8 +10,8 @@ namespace EFCore10Examples.Examples
     {
         public static void DemonstrateNewLinqMethods()
         {
-            Console.WriteLine("\n=== EF Core 10: Enhanced Join Support ===");
-            Console.WriteLine("Demonstrating improved join patterns and syntax\n");
+            Console.WriteLine("\n=== EF Core 10: New LINQ Join Methods ===");
+            Console.WriteLine("Demonstrating new LeftJoin() and RightJoin() methods\n");
 
             using var context = new AppDbContext();
             context.Database.EnsureCreated();
@@ -27,19 +27,16 @@ namespace EFCore10Examples.Examples
             Console.WriteLine("LEFT JOIN Pattern: All customers with their orders (null for customers without orders)");
 
             var leftJoinResults = context.Customers
-                .GroupJoin(
+                .LeftJoin(
                     context.Orders,
                     customer => customer.Id,
                     order => order.CustomerId,
-                    (customer, orders) => new { customer, orders })
-                .SelectMany(
-                    x => x.orders.DefaultIfEmpty(),
-                    (x, order) => new
-                    {
-                        CustomerName = x.customer.Name,
-                        OrderNumber = order != null ? order.OrderNumber : "No Order",
-                        TotalAmount = order != null ? order.TotalAmount : 0
-                    })
+                     (customer, order) => new
+                     {
+                         CustomerName = customer != null ? customer.Name : "Unknown Customer",
+                         OrderNumber = order != null ? order.OrderNumber : "No Order",
+                         TotalAmount = order != null ? order.TotalAmount : 0
+                     })
                 .ToList();
 
             foreach (var result in leftJoinResults)
@@ -47,22 +44,19 @@ namespace EFCore10Examples.Examples
                 Console.WriteLine($"  Customer: {result.CustomerName}, Order: {result.OrderNumber}, Amount: ${result.TotalAmount}");
             }
 
-            // RIGHT JOIN pattern - Can be simulated by reversing the order
-            Console.WriteLine("\nRIGHT JOIN Pattern: All orders with their customers");
+            // RIGHT JOIN - All orders with their customers
+            Console.WriteLine("\nRIGHT JOIN (NEW in EF Core 10): All orders with their customers");
 
-            var rightJoinResults = context.Orders
-                .GroupJoin(
-                    context.Customers,
-                    order => order.CustomerId,
+            var rightJoinResults = context.Customers
+                .RightJoin(
+                    context.Orders,
                     customer => customer.Id,
-                    (order, customers) => new { order, customers })
-                .SelectMany(
-                    x => x.customers.DefaultIfEmpty(),
-                    (x, customer) => new
+                    order => order.CustomerId,
+                    (customer, order) => new
                     {
                         CustomerName = customer != null ? customer.Name : "Unknown Customer",
-                        OrderNumber = x.order.OrderNumber,
-                        TotalAmount = x.order.TotalAmount
+                        OrderNumber =  order != null ? order.OrderNumber : "No Order",
+                        TotalAmount = order != null ? order.TotalAmount : 0
                     })
                 .ToList();
 
