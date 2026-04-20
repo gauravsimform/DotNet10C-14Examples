@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="C#14Examples/C#14Examples.csproj" />
+  <Project Path="EFCore10Examples/EFCore10Examples.csproj" />
 </Solution>
